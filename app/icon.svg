@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="House Money Portfolio Logo">
+  <defs>
+    <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#28d1b2"/>
+      <stop offset="1" stop-color="#118a6f"/>
+    </linearGradient>
+  </defs>
+  <circle cx="256" cy="256" r="244" fill="#0D9B7A"/>
+  <!-- chip ring -->
+  <circle cx="256" cy="256" r="200" fill="#19c49b" stroke="#0D9B7A" stroke-width="12"/>
+  <circle cx="256" cy="256" r="160" fill="#0D9B7A" stroke="#e1a73a" stroke-width="18"/>
+  <!-- chip inserts -->
+  <g fill="rgba(255,255,255,0.5)">
+    <rect x="238" y="60" width="36" height="52" rx="6"/>
+    <rect x="238" y="400" width="36" height="52" rx="6"/>
+    <rect x="60" y="238" width="52" height="36" rx="6"/>
+    <rect x="400" y="238" width="52" height="36" rx="6"/>
+    <rect x="120" y="105" width="36" height="52" rx="6" transform="rotate(-45 138 131)"/>
+    <rect x="356" y="355" width="36" height="52" rx="6" transform="rotate(-45 374 381)"/>
+    <rect x="356" y="105" width="36" height="52" rx="6" transform="rotate(45 374 131)"/>
+    <rect x="120" y="355" width="36" height="52" rx="6" transform="rotate(45 138 381)"/>
+  </g>
+  <!-- mark -->
+  <g transform="translate(120,140)">
+    <rect x="40" y="160" width="38" height="70" rx="6" fill="rgba(255,255,255,0.85)"/>
+    <rect x="96" y="132" width="38" height="98" rx="6" fill="rgba(255,255,255,0.85)"/>
+    <rect x="152" y="100" width="38" height="130" rx="6" fill="rgba(255,255,255,0.85)"/>
+    <path d="M48 128l76-64 36 30 66-54" fill="none" stroke="#e1a73a" stroke-width="16" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M296 40l-8 44-44-8z" fill="#e1a73a"/>
+  </g>
+</svg>
