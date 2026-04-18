@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 180" role="img" aria-label="House Money Portfolio Wordmark">
+  <style>
+    .hm { font: 700 88px 'Inter', Arial, sans-serif; letter-spacing: 2px; fill: rgba(0,0,0,0.87); }
+    .pf { font: 700 44px 'Inter', Arial, sans-serif; letter-spacing: 8px; fill: #e1a73a; }
+  </style>
+  <rect width="100%" height="100%" fill="none"/>
+  <text x="10" y="92" class="hm">HOUSE MONEY</text>
+  <text x="10" y="160" class="pf">PORTFOLIO</text>
+  <!-- thin baseline for subtle polish -->
+  <rect x="10" y="168" width="300" height="2" fill="rgba(0,0,0,0.08)" />
+
+</svg>
