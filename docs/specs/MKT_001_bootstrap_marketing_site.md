@@ -48,6 +48,7 @@ Blast radius: fully isolated from HMP trading platform. Shares only AWS account 
 - Next.js 14 scaffolding with static export configuration
 - Port of the April 17 `HMPMarketingSite.jsx` artifact into production component files
 - Static signals screenshot (replaces the animated mockup table)
+- Real brand assets (logo, wordmark, founder headshot) provided by Q and placed in `public/`
 - SEO: Metadata API, OG image, favicon set, robots.ts, sitemap.ts, Organization + SoftwareApplication JSON-LD
 - Waitlist form wiring (frontend → Lambda → DynamoDB + Resend)
 - Legal pages: `/privacy` and `/terms` (placeholder content, to be replaced with reviewed legal copy before launch)
@@ -67,6 +68,7 @@ Blast radius: fully isolated from HMP trading platform. Shares only AWS account 
 - Google Analytics or any cookie-dependent analytics (Cloudflare Web Analytics only if needed)
 - Email drip sequences (only the immediate notification is wired)
 - CloudFront distribution (explicitly replaced by Cloudflare proxy per Pattern C decision)
+- Image generation, resizing, or manipulation of brand assets by Claude Code — Q provides finished files
 
 ---
 
@@ -85,31 +87,37 @@ hmp-website/
 │   ├── terms/
 │   │   └── page.tsx
 │   ├── opengraph-image.tsx        # Dynamic OG image generation (1200x630)
-│   ├── icon.svg                   # Favicon (SVG, modern browsers)
+│   ├── icon.svg                   # Favicon (SVG, modern browsers) — derived from logo
 │   ├── apple-icon.png             # 180x180 PNG for iOS home screen
 │   ├── robots.ts                  # Static robots.txt generator
 │   ├── sitemap.ts                 # Static sitemap.xml generator
 │   └── not-found.tsx              # Custom 404 page
 ├── components/
-│   ├── Nav.tsx
+│   ├── Nav.tsx                    # Renders logo + wordmark (clickable, links to /)
 │   ├── Hero.tsx
 │   ├── CredibilityStrip.tsx
 │   ├── ProblemSection.tsx
 │   ├── SignalsPreview.tsx         # Static image + caption
 │   ├── MoatsSection.tsx
-│   ├── FounderSection.tsx
+│   ├── FounderSection.tsx         # Renders square headshot with emerald accent ring
 │   ├── FinalCTA.tsx
 │   ├── Footer.tsx
 │   └── WaitlistForm.tsx           # Reused in Hero and FinalCTA
 ├── lib/
-│   ├── brand.ts                   # Color, typography, spacing constants
+│   ├── brand.ts                   # Color, typography, spacing constants (see Section 4.5)
 │   ├── content.ts                 # All copy and stats (single source of truth)
 │   └── waitlist.ts                # Client-side submit logic
 ├── public/
-│   ├── og.png                     # Fallback static OG image
+│   ├── brand/
+│   │   ├── logo.svg               # Provided by Q — chip/coin motif, emerald + gold
+│   │   └── wordmark.svg           # Provided by Q — "HOUSE MONEY" black + "PORTFOLIO" gold
+│   ├── founder/
+│   │   ├── quentrell-green.jpg    # Provided by Q — square crop, 800x800 minimum
+│   │   └── quentrell-green@2x.jpg # Provided by Q — retina 1600x1600
 │   ├── screenshots/
-│   │   ├── signals-preview.png
+│   │   ├── signals-preview.png    # Provided by Q — real app screenshot
 │   │   └── signals-preview@2x.png
+│   ├── og.png                     # Fallback static OG image
 │   └── favicon.ico                # Legacy fallback
 ├── infra/
 │   ├── main.tf                    # S3, Lambda, DynamoDB, Secrets Manager, IAM
@@ -134,6 +142,45 @@ hmp-website/
 
 ---
 
+## 4.5 Brand Tokens
+
+Brand palette matches the HMP main app post-FEAT_250/FEAT_252 redesign. Do not invent colors. Do not use the April 17 JSX artifact's blue/cyan palette — that was from the pre-redesign digest and is wrong.
+
+**Color palette:**
+
+| Token | Value | Usage |
+|---|---|---|
+| `primary` | `#0D9B7A` | Emerald — main brand color, primary CTAs, moat icons |
+| `primaryLight` | `#19c49b` | Hover states, accent rings, subtle emerald backgrounds |
+| `primaryDark` | `#087A5E` | Pressed states, dense emerald areas |
+| `accent` | `#e1a73a` | Gold — wordmark accent, sparingly applied in hero and founder card |
+| `accentDark` | `#C4922A` | Darker gold for text on white (WCAG AA contrast) |
+| `bgDefault` | `#F8F9FB` | Page background |
+| `bgPaper` | `#FFFFFF` | Card surface white |
+| `textPrimary` | `rgba(0,0,0,0.87)` | Body text, "HOUSE MONEY" wordmark equivalent |
+| `textSecondary` | `rgba(0,0,0,0.54)` | Muted/caption text |
+| `textDisabled` | `rgba(0,0,0,0.38)` | Placeholder, disabled states |
+| `border` | `rgba(0,0,0,0.08)` | Card borders, dividers |
+| `success` | `#0D9B7A` | Same as primary (emerald) |
+| `error` | `#DC3545` | Error/danger states |
+| `warning` | `#E8A317` | Warning states |
+| `info` | `#2F7BCA` | Informational states |
+
+**Typography:**
+- Primary typeface: Inter via `next/font/google`
+- Weights loaded: 400, 500, 600, 700
+- Tabular numerals enabled globally: `font-feature-settings: "tnum"`
+- Do not re-render "HOUSE MONEY PORTFOLIO" as text anywhere — always use the wordmark SVG asset
+
+**Shadows and borders:**
+- Card shadow: `0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)`
+- Card border: `1px solid rgba(0,0,0,0.06)`
+- Border radius: `12px` for cards, `8px` for buttons, `999px` for pills/chips
+
+**Gold is a spice, not a sauce.** Use emerald as the dominant brand color. Apply gold in at most three places on the page (e.g., wordmark accent, founder card top strip, final CTA highlight). Overusing gold cheapens the brand.
+
+---
+
 ## 5. Execution Phases
 
 Claude Code executes in five phases. Each phase has a clear completion gate. Q reviews each gate before the next phase begins.
@@ -142,36 +189,43 @@ Claude Code executes in five phases. Each phase has a clear completion gate. Q r
 - Initialize Next.js 14 project with TypeScript, App Router, static export config
 - Set up `.gitignore`, `tsconfig.json`, `next.config.ts` with `output: 'export'`
 - Install dependencies: `next`, `react`, `react-dom`, `lucide-react`, `typescript`, `@types/node`, `@types/react`
-- Create `lib/brand.ts` with color constants (`#1976D2`, `#00BCD4`, MUI-style borders, Inter font references)
-- Create `lib/content.ts` with all copy and stats (tagline, credibility numbers, moats content, founder bio, legal disclaimer)
-- Set up `app/layout.tsx` with `next/font` loading Inter, basic Metadata API defaults
+- Create `lib/brand.ts` with color constants matching Section 4.5 exactly. Do not invent colors. Do not use blue/cyan.
+- Create `lib/content.ts` with placeholder structure (tagline, credibility numbers, moats content, founder bio, legal disclaimer) — real copy is ported in Phase 2
+- Set up `app/layout.tsx` with `next/font` loading Inter (weights 400, 500, 600, 700), basic Metadata API defaults
 - Create a minimal `app/page.tsx` that renders "Hello HMP" so local dev is verifiable
 - Create `README.md` with local dev instructions
 
-**Gate:** `npm run dev` runs locally on laptop, site loads at `localhost:3000`, `npm run build` produces static output in `out/`.
+**Gate:** `npm run dev` runs locally on laptop, site loads at `localhost:3000`, `npm run build` produces static output in `out/`. Brand tokens in `lib/brand.ts` match Section 4.5 exactly (Q verifies by opening the file).
 
 ### Phase 2: Port the April 17 mockup
 - Create each component file under `components/` from the JSX artifact
-- Replace the animated `SignalsTableSection` with `SignalsPreview.tsx` (static screenshot + caption). Screenshot file is a placeholder PNG for now; Q will provide the real screenshot before launch.
+- **Port structure and copy only; swap colors from blue/cyan to emerald/gold as you go.** The April 17 artifact's palette is outdated. Any hardcoded `#1976D2` or `#00BCD4` in the source must become `#0D9B7A` or `#e1a73a` respectively at port time.
+- Replace the animated `SignalsTableSection` with `SignalsPreview.tsx` (static screenshot + caption). Screenshot file is a placeholder PNG for now; Q provides the real screenshot before launch.
 - Wire all components into `app/page.tsx` in the correct order
-- Implement `components/WaitlistForm.tsx` with client-side submit to `/api/waitlist` (endpoint doesn't exist yet — form shows loading + error + success states but POSTs to placeholder)
-- Update the `Sign in` nav link to `<a href="https://app.housemoneyportfolio.com/sign-in">`
+- Implement `components/WaitlistForm.tsx` with client-side submit to the Lambda Function URL (endpoint doesn't exist yet — form shows loading + error + success states but POSTs to a placeholder URL from env var)
+- **Brand assets integration:**
+  - Q places `public/brand/logo.svg` and `public/brand/wordmark.svg` before Phase 2 begins
+  - Q places `public/founder/quentrell-green.jpg` (square-cropped) and `@2x` variant before Phase 2 begins
+  - If any of these are missing at Phase 2 kickoff, Claude Code uses placeholder files (simple 1-color SVG for brand, gray square for headshot) and flags the missing assets in the gate report
+  - `components/Nav.tsx` renders the logo + wordmark as the top-left brand mark. Clickable, links to `/`. Uses `<Image>` or `<img>` with explicit `width`/`height`.
+  - `components/FounderSection.tsx` renders the headshot with a 4px emerald accent ring (`border: 4px solid var(--primary-light)` or `#19c49b`). Use `<Image>` with explicit `width={160} height={160}`. Square frame.
+- Update the `Sign in` nav link to `<a href="https://app.housemoneyportfolio.com/sign-in">` (plain anchor, not client-side routing)
 - Create `app/privacy/page.tsx` and `app/terms/page.tsx` with placeholder content and a TODO comment noting legal review required
 - Create `app/not-found.tsx` matching brand
 
-**Gate:** Full marketing page renders locally, visually matches the April 17 artifact, all internal links work, sign-in link points to app subdomain.
+**Gate:** Full marketing page renders locally, visually matches the April 17 artifact but with correct emerald/gold palette, all internal links work, sign-in link points to app subdomain, real logo and wordmark render in nav, real headshot renders in founder section with emerald accent ring.
 
 ### Phase 3: SEO + polish
 - Populate `app/layout.tsx` Metadata API: title template, description, OG tags, Twitter card, canonical
-- Create `app/opengraph-image.tsx` that generates a 1200x630 image with HMP logo, tagline, and three moat labels
-- Add `app/icon.svg` (favicon matching the HMP app's favicon)
-- Add `app/apple-icon.png` (180x180)
+- Create `app/opengraph-image.tsx` that generates a 1200x630 image with HMP wordmark, tagline, and three moat labels. Use the brand palette (emerald background or white background with emerald accents — not blue).
+- Add `app/icon.svg` — favicon derived from `public/brand/logo.svg`, sized appropriately for favicon context
+- Add `app/apple-icon.png` (180x180) — same logo motif as the favicon
 - Implement `app/robots.ts` and `app/sitemap.ts`
 - Add Organization and SoftwareApplication JSON-LD to `app/layout.tsx`
 - Optimize signals screenshot: pre-build to WebP with fallback PNG, proper `width`/`height` attributes
 - Run Lighthouse locally, address any red flags on Performance, Accessibility, Best Practices, SEO
 
-**Gate:** Lighthouse scores: Performance ≥ 95, Accessibility ≥ 95, Best Practices = 100, SEO = 100 on local build.
+**Gate:** Lighthouse scores: Performance ≥ 95, Accessibility ≥ 95, Best Practices = 100, SEO = 100 on local build. OG image previews correctly when URL is pasted into a Slack or LinkedIn draft (Q verifies by drafting a message, not sending).
 
 ### Phase 4: Infrastructure (Terraform)
 - Write `infra/main.tf` provisioning:
@@ -268,6 +322,7 @@ Documented in `README.md` and `infra/README.md`:
 - How to inspect waitlist leads (`aws dynamodb scan --table-name hmp-website-waitlist`)
 - How to rotate the Resend API key
 - How to respond to a Cloudflare WAF alert
+- How to update brand assets (replace files in `public/brand/` or `public/founder/`, commit, push — no code changes needed)
 
 ---
 
@@ -275,12 +330,15 @@ Documented in `README.md` and `infra/README.md`:
 
 - [ ] Site loads at `https://housemoneyportfolio.com` and `https://www.housemoneyportfolio.com`
 - [ ] HTTP → HTTPS redirect works
-- [ ] All sections from the April 17 mockup render correctly
+- [ ] All sections from the April 17 mockup render correctly in emerald/gold palette (no blue/cyan anywhere)
+- [ ] Real logo renders in navigation, clickable, returns to top of page
+- [ ] Real wordmark renders in navigation and footer
+- [ ] Real founder headshot renders in founder section with emerald accent ring
 - [ ] Sign-in button routes to `https://app.housemoneyportfolio.com/sign-in`
 - [ ] Waitlist form submits successfully; email arrives at `quentrell@housemoneyportfolio.com`; row appears in DynamoDB
 - [ ] `/privacy` and `/terms` routes render (with placeholder content flagged for legal review)
 - [ ] OG image preview renders correctly when URL is shared in Slack / LinkedIn / iMessage
-- [ ] Favicon visible in browser tab, matches HMP app favicon
+- [ ] Favicon visible in browser tab, derived from the logo
 - [ ] Lighthouse scores meet Phase 3 gate
 - [ ] Cloudflare proxy enabled, WAF on, Bot Fight Mode on, rate limiting on Lambda URL
 - [ ] No Cloudflare Access policies on the zone (no 2FA for public visitors)
@@ -293,10 +351,10 @@ Documented in `README.md` and `infra/README.md`:
 
 ## 10. Known Open Items (Not Blocking)
 
-- **Signals screenshot:** Q to provide the real screenshot. Placeholder used until then.
+- **Brand assets (logo, wordmark, headshot):** Q places files in `public/brand/` and `public/founder/` before Phase 2 execution begins. Claude Code references these files by path but does not generate, resize, or manipulate them. Placeholder files may be used during Phase 1 to unblock scaffolding.
+- **Signals screenshot:** Q to provide the real screenshot before launch. Placeholder used until then.
 - **Legal copy for /privacy and /terms:** Placeholder text in place with TODO. Real copy pending legal review. Required before public launch but not required before InvestFest application review window (judges won't read legal pages).
-- **Real founder photo:** Placeholder used until Q provides the final photo.
-- **Exact credibility numbers:** Pulled from memory (55+ services, 13 brokers, 60+ data sources). Verify against current `lib/content.ts` before final deploy.
+- **Exact credibility numbers:** Pulled from memory (55+ services, 13 brokers, 60+ data sources). Verify against current platform state in `lib/content.ts` before final deploy.
 
 ---
 
@@ -305,6 +363,7 @@ Documented in `README.md` and `infra/README.md`:
 - **Cloudflare IP range drift:** S3 bucket policy references Cloudflare's published IP ranges. Cloudflare updates these periodically. Mitigation: documented manual refresh quarterly, or alternative — use a Cloudflare Worker as origin fetch (future enhancement, out of scope).
 - **Cold start on Lambda:** First waitlist submit after idle period may take 1–2 seconds. Acceptable for v1. If user experience suffers, provision reserved concurrency (1) at ~$5/month.
 - **Resend deliverability:** Notification email may land in Gmail promotions or spam initially. Mitigation: SPF/DKIM/DMARC on `housemoneyportfolio.com` must be configured; send from a subdomain like `notify@housemoneyportfolio.com`.
+- **Brand asset quality:** If the headshot is not square-cropped before Phase 2, the circular frame component will distort. Q confirms square crop before Phase 2 kickoff.
 
 ---
 
@@ -318,9 +377,14 @@ Do not:
 - Attempt to integrate Clerk, MUI, Tailwind, or any other framework used in the HMP main app
 - Use `any` types in TypeScript without explicit justification
 - Commit secrets to the repo
+- Use the April 17 JSX artifact's blue/cyan colors — the correct palette is in Section 4.5
+- Generate, resize, crop, or otherwise manipulate Q's brand assets (logo, wordmark, headshot)
+- Re-render the wordmark as HTML text — always reference the SVG asset
 
 Do:
 - Mirror the HMP main app's code style (2-space indent, TypeScript strict mode, descriptive variable names)
+- Match the brand palette in Section 4.5 exactly
 - Write inline comments for any non-obvious design decisions
 - Keep components focused — one component per file, no nested subcomponents beyond trivially small helpers
 - Ship Phase 1 before touching Phase 2
+- Flag missing brand assets in gate reports rather than fabricating substitutes beyond trivial placeholders
