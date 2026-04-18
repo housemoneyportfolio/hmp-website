@@ -1,8 +1,8 @@
 # Spec Number Reconciliation — Single Source of Truth
 
 > **Authority:** `ops/specs/` on disk is the single source of truth. Memory and project knowledge files are secondary and may be stale. When conflicts arise, trust what exists on disk.
-> **Last reconciled:** 2026-04-18 (bootstrap)
-> **Next available MKT:** MKT_002
+> **Last reconciled:** 2026-04-18 (MKT_002)
+> **Next available MKT:** MKT_003
 > **Next available FIX:** FIX_001
 
 ---
@@ -18,7 +18,8 @@
 
 | Spec ID | Title | Status | Completed |
 |---------|-------|--------|-----------|
-| MKT_001 | Bootstrap Marketing Site | APPROVED / IN_PROGRESS | — |
+| MKT_001 | Bootstrap Marketing Site (multi-phase) | COMPLETE (Phases 1–3) | 2026-04-18 |
+| MKT_002 | Port spec-first workflow infrastructure | COMPLETE | 2026-04-18 |
 
 ## 3. Retired / Reserved Numbers
 

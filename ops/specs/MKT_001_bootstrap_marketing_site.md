@@ -146,35 +146,43 @@ hmp-website/
 
 Brand palette matches the HMP main app post-FEAT_250/FEAT_252 redesign. Do not invent colors. Do not use the April 17 JSX artifact's blue/cyan palette — that was from the pre-redesign digest and is wrong.
 
-**Color palette:**
+**Color palette (from `lib/brand.ts` — authoritative):**
 
 | Token | Value | Usage |
 |---|---|---|
 | `primary` | `#0D9B7A` | Emerald — main brand color, primary CTAs, moat icons |
-| `primaryLight` | `#19c49b` | Hover states, accent rings, subtle emerald backgrounds |
-| `primaryDark` | `#087A5E` | Pressed states, dense emerald areas |
-| `accent` | `#e1a73a` | Gold — wordmark accent, sparingly applied in hero and founder card |
-| `accentDark` | `#C4922A` | Darker gold for text on white (WCAG AA contrast) |
-| `bgDefault` | `#F8F9FB` | Page background |
-| `bgPaper` | `#FFFFFF` | Card surface white |
-| `textPrimary` | `rgba(0,0,0,0.87)` | Body text, "HOUSE MONEY" wordmark equivalent |
-| `textSecondary` | `rgba(0,0,0,0.54)` | Muted/caption text |
-| `textDisabled` | `rgba(0,0,0,0.38)` | Placeholder, disabled states |
-| `border` | `rgba(0,0,0,0.08)` | Card borders, dividers |
-| `success` | `#0D9B7A` | Same as primary (emerald) |
-| `error` | `#DC3545` | Error/danger states |
-| `warning` | `#E8A317` | Warning states |
-| `info` | `#2F7BCA` | Informational states |
+| `primaryLight` | `#19c49b` | Hover states, accent rings |
+| `primaryDeep` | `#118a6f` | Mid-depth emerald |
+| `primaryDark` | `#0A7057` | Pressed states |
+| `primaryDarker` | `#064D3D` | Dark section backgrounds (FinalCTA, FounderCard) |
+| `accent` | `#10B981` | Emerald accent (success tick, moat bullets) |
+| `accentLight` | `#34D399` | Light emerald highlights |
+| `accentPale` | `#D1FAE5` | Very light emerald icon backgrounds |
+| `gold` | `#e1a73a` | Gold — wordmark accent, founder card strip, CTA highlight |
+| `goldLight` | `#F5C261` | Light gold for subheadlines on dark backgrounds |
+| `goldPale` | `#FEF3D8` | Pale gold backgrounds |
+| `bgWhite` | `#FFFFFF` | Card surface white |
+| `bgPaper` | `#FAFBFC` | Page background / footer |
+| `bgMuted` | `#F5F7FA` | Section backgrounds |
+| `bgSubtle` | `#EEF2F7` | Subtle section backgrounds |
+| `textPrimary` | `rgba(0,0,0,0.87)` | Primary body text |
+| `textSecondary` | `#475569` | Secondary text, descriptions |
+| `textMuted` | `#94A3B8` | Muted / caption text |
+| `borderLight` | `rgba(15,23,42,0.08)` | Card borders, dividers |
+| `borderMid` | `rgba(15,23,42,0.14)` | Slightly stronger borders |
+| `success` | `#10B981` | Success states |
+| `warning` | `#F59E0B` | Warning states |
+| `danger` | `#EF4444` | Error / danger states (ProblemSection) |
 
 **Typography:**
 - Primary typeface: Inter via `next/font/google`
 - Weights loaded: 400, 500, 600, 700
-- Tabular numerals enabled globally: `font-feature-settings: "tnum"`
 - Do not re-render "HOUSE MONEY PORTFOLIO" as text anywhere — always use the wordmark SVG asset
 
-**Shadows and borders:**
+**Shadows and borders (from `lib/brand.ts`):**
 - Card shadow: `0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06)`
-- Card border: `1px solid rgba(0,0,0,0.06)`
+- Dashboard shadow: `0 20px 50px -20px rgba(13,155,122,0.2), 0 8px 24px -12px rgba(0,0,0,0.08)`
+- Card border: `1px solid rgba(15,23,42,0.08)`
 - Border radius: `12px` for cards, `8px` for buttons, `999px` for pills/chips
 
 **Gold is a spice, not a sauce.** Use emerald as the dominant brand color. Apply gold in at most three places on the page (e.g., wordmark accent, founder card top strip, final CTA highlight). Overusing gold cheapens the brand.
@@ -199,7 +207,7 @@ Claude Code executes in five phases. Each phase has a clear completion gate. Q r
 
 ### Phase 2: Port the April 17 mockup
 - Create each component file under `components/` from the JSX artifact
-- **Port structure and copy only; swap colors from blue/cyan to emerald/gold as you go.** The April 17 artifact's palette is outdated. Any hardcoded `#1976D2` or `#00BCD4` in the source must become `#0D9B7A` or `#e1a73a` respectively at port time.
+- **Port structure and copy only; all colors must use tokens from `lib/brand.ts`.** The April 17 artifact's blue/cyan palette is outdated and was replaced during Phase 2 — do not reintroduce it.
 - Replace the animated `SignalsTableSection` with `SignalsPreview.tsx` (static screenshot + caption). Screenshot file is a placeholder PNG for now; Q provides the real screenshot before launch.
 - Wire all components into `app/page.tsx` in the correct order
 - Implement `components/WaitlistForm.tsx` with client-side submit to the Lambda Function URL (endpoint doesn't exist yet — form shows loading + error + success states but POSTs to a placeholder URL from env var)

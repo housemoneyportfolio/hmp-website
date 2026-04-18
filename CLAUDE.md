@@ -9,11 +9,14 @@
 
 These are non-negotiable. If you're about to break one, stop and ask.
 
-1. **Brand Tokens Are Source of Truth**: All colors, spacing, and typography come from `lib/tokens.ts`. Never hardcode hex values. Never deviate from the emerald/gold palette.
-2. **Performance Budget**: LCP < 2.5s, CLS < 0.1. Every image uses `next/image`. No layout shift from font loading.
-3. **Spec-First**: Every new page, section, or non-trivial content change needs a spec before implementation. No exceptions outside the exemptions list in `/spec-first`.
-4. **Zero Type Errors, Zero Lint Errors**: `tsc --noEmit` and `next lint` must pass clean. These are CI gates, not suggestions.
-5. **Accessibility**: WCAG 2.1 AA minimum. Every `<img>` has meaningful `alt`. Every interactive element has visible focus styles and keyboard support.
+1. **Brand Tokens Are Source of Truth**: All colors come from `lib/brand.ts`. Never hardcode hex values in component files. Never deviate from the emerald/gold palette defined there.
+2. **Wordmark**: Never render "HOUSE MONEY PORTFOLIO" as HTML text. Always use `/public/brand/wordmark.svg`.
+3. **Static Export**: `npm run build` must complete clean and produce `out/`. No server-side features (`getServerSideProps`, API routes, etc.).
+4. **Lighthouse Budget**: Performance ≥ 95 · Accessibility ≥ 95 · Best Practices = 100 · SEO = 100. These are hard gates before any deploy.
+5. **Brand Assets Read-Only**: Never generate, resize, crop, or modify files in `public/brand/` or `public/founder/`. Q provides finished files.
+6. **Spec-First**: Every new page, section, or non-trivial change needs a spec before implementation. No exceptions outside the exemptions list in `/spec-first`.
+7. **Zero Type Errors, Zero Lint Errors**: `npx tsc --noEmit` and `npm run build` must pass clean. These are CI gates, not suggestions.
+8. **Accessibility**: WCAG 2.1 AA minimum. Every `<img>` has meaningful `alt`. Every interactive element has visible focus styles and keyboard support.
 
 ---
 
@@ -36,7 +39,7 @@ These are non-negotiable. If you're about to break one, stop and ask.
 
 ### Code Quality
 - Never use `"use client"` at the Next.js page level — use server component `page.tsx` → client wrapper pattern
-- Never hardcode colors (`#10B981`, `#D4AF37`, etc.) in component files — use CSS variables (`var(--hm-*)`) or Tailwind tokens from `lib/tokens.ts`
+- Never hardcode colors (`#10B981`, `#D4AF37`, etc.) in component files — always import from `lib/brand.ts`
 - Never add a font family other than the project's configured typefaces — check `app/layout.tsx` for the current font setup
 - Never use `<img>` directly — use `next/image` for all images for automatic optimization and CLS prevention
 - Never use `setInterval` for polling in React — use `setTimeout`-after-completion pattern to avoid stacking requests
@@ -70,9 +73,17 @@ These are non-negotiable. If you're about to break one, stop and ask.
 
 ## Rules Added Per Feature
 
-| Date | Feature | Rule Summary |
-|------|---------|--------------|
-| 2026-04-18 | Bootstrap | Initial agent infrastructure for hmp-website |
+| Date | Spec | Rule Summary |
+|---|---|---|
+| 2026-04-18 | MKT_001 Phase 1 | Never use `next.config.ts` with Next.js 14 |
+| 2026-04-18 | MKT_001 Phase 1 | Never run `create-next-app` in a non-empty directory |
+| 2026-04-18 | MKT_001 Phase 2 | Never type lucide-react icons as `ComponentType<{ size: number; color: string }>` |
+| 2026-04-18 | MKT_001 Phase 2 | Never delete a component without updating all imports in the same commit |
+| 2026-04-18 | MKT_001 Phase 2 revised | Never rebuild from a mockup without re-gating |
+| 2026-04-18 | MKT_001 Phase 2 | Never expand brand tokens without updating Section 4.5 of the spec |
+| 2026-04-18 | MKT_001 Phase 3 | Never use `opengraph-image.tsx` / `ImageResponse` in static export — use SVG + sharp rasterization |
+| 2026-04-18 | MKT_002 | Never start implementation before porting workflow infrastructure |
+| 2026-04-18 | MKT_002 | Never assume ops/specs/ files don't exist — check disk before creating; Claude Code harness may have seeded them |
 
 ---
 
@@ -124,7 +135,7 @@ Run `/spec-first` for the full workflow. Never implement without an approved spe
 | Marketing feature specs | `ops/specs/MKT_{NNN}_{slug}.md` |
 | Fix specs | `ops/specs/FIX_{NNN}_{slug}.md` |
 | Spec template | `ops/specs/_TEMPLATE.md` |
-| Brand tokens | `lib/tokens.ts` |
+| Brand tokens | `lib/brand.ts` |
 | Page components | `app/{page}/page.tsx` (server) + `app/{page}/ui/{Page}Client.tsx` (client) |
 
 ---

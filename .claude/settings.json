@@ -40,7 +40,20 @@
       "Bash(terraform plan *)",
       "Bash(terraform init *)",
       "Bash(terraform validate *)",
+      "Bash(terraform fmt *)",
       "Bash(terraform output *)",
+
+      "Bash(aws sts *)",
+      "Bash(aws s3 ls *)",
+      "Bash(aws s3 cp *)",
+      "Bash(aws s3 sync *)",
+      "Bash(aws dynamodb scan *)",
+      "Bash(aws dynamodb get-item *)",
+      "Bash(aws dynamodb query *)",
+      "Bash(aws cloudfront create-invalidation *)",
+      "Bash(aws secretsmanager describe-secret *)",
+
+      "Bash(sharp *)",
 
       "Bash(cat *)",
       "Bash(head *)",
@@ -96,6 +109,10 @@
 
       "Bash(terraform apply *)",
       "Bash(terraform destroy *)",
+
+      "Bash(aws iam delete-*)",
+      "Bash(aws s3 rb *)",
+      "Bash(aws dynamodb delete-table *)",
 
       "Bash(git push *)",
       "Bash(git push --force *)",

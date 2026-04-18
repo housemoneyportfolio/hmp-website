@@ -11,8 +11,11 @@ Add a "Never Do" rule or update project rules based on what went wrong or was le
    - Code Quality
    - Scope Control
    - Content & SEO
-   - Accessibility
    - Performance
+   - Accessibility
+   - Build & Tooling
+   - Infrastructure
+   - Brand
 
 3. **Add the rule to CLAUDE.md**:
    - Find the appropriate "Never Do" section

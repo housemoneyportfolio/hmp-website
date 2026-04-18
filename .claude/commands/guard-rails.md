@@ -42,10 +42,12 @@ For the remainder of this session:
 These files require extra justification beyond the standard guard rails check. Even if they're in the spec, state your intent before modifying:
 
 - `app/layout.tsx` — root layout, affects every page
-- `lib/tokens.ts` — brand tokens, visual consistency across entire site
+- `lib/brand.ts` — brand tokens, visual consistency across entire site
 - `next.config.mjs` — build configuration, affects deployment
 - `.claude/settings.json` — agent permissions
 - `package.json` / `package-lock.json` — dependency changes
+- `public/brand/*` — logo and wordmark SVGs; never regenerate or overwrite without operator approval
+- `public/founder/*` — founder headshot; never crop, resize, or replace without operator approval
 
 ## Deactivation
 
