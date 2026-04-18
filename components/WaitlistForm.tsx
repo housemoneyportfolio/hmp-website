@@ -1,28 +1,36 @@
 'use client'
 
 import { useState } from 'react'
-import { colors, borders } from '@/lib/brand'
+import { ArrowRight, CheckCircle2 } from 'lucide-react'
+import { colors } from '@/lib/brand'
 import { submitWaitlist } from '@/lib/waitlist'
 
 type State = 'idle' | 'loading' | 'success' | 'error'
 
 interface Props {
-  ctaLabel?: string
-  size?: 'default' | 'large'
+  ctaLabel?:    string
+  successMsg?:  string
+  size?:        'default' | 'large'
+  showArrow?:   boolean
+  goldButton?:  boolean // used in final CTA section
 }
 
-export default function WaitlistForm({ ctaLabel = 'Get Early Access', size = 'default' }: Props) {
-  const [email, setEmail] = useState('')
-  const [state, setState] = useState<State>('idle')
+export default function WaitlistForm({
+  ctaLabel   = 'Get Early Access',
+  successMsg = "You're on the list. We'll be in touch.",
+  size       = 'default',
+  showArrow  = false,
+  goldButton = false,
+}: Props) {
+  const [email, setEmail]   = useState('')
+  const [state, setState]   = useState<State>('idle')
   const [errorMsg, setErrorMsg] = useState('')
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     if (!email.trim()) return
-
     setState('loading')
     const result = await submitWaitlist(email.trim())
-
     if (result.ok) {
       setState('success')
       setEmail('')
@@ -32,23 +40,19 @@ export default function WaitlistForm({ ctaLabel = 'Get Early Access', size = 'de
     }
   }
 
-  const inputHeight = size === 'large' ? 52 : 44
-  const fontSize = size === 'large' ? 16 : 14
+  const pad  = size === 'large' ? '14px 18px' : '10px 14px'
+  const fs   = size === 'large' ? 15 : 14
 
   if (state === 'success') {
     return (
-      <div
-        style={{
-          padding: '14px 20px',
-          backgroundColor: `${colors.primary}18`,
-          border: `1px solid ${colors.primary}`,
-          borderRadius: borders.radius.button,
-          color: colors.primaryDark,
-          fontWeight: 600,
-          fontSize,
-        }}
-      >
-        You&apos;re on the list. We&apos;ll be in touch.
+      <div style={{
+        display: 'inline-flex', alignItems: 'center', gap: 10,
+        padding: '14px 20px', background: colors.accentPale,
+        border: `1px solid ${colors.accent}`, borderRadius: 8,
+        color: colors.primaryDeep, fontWeight: 600,
+      }}>
+        <CheckCircle2 size={18} color={colors.primary} />
+        {successMsg}
       </div>
     )
   }
@@ -59,43 +63,36 @@ export default function WaitlistForm({ ctaLabel = 'Get Early Access', size = 'de
         <input
           type="email"
           required
-          placeholder="Enter your email"
+          placeholder="your@email.com"
           value={email}
           onChange={e => setEmail(e.target.value)}
           disabled={state === 'loading'}
           style={{
-            flex: '1 1 220px',
-            height: inputHeight,
-            padding: '0 16px',
-            fontSize,
-            border: `1px solid ${state === 'error' ? colors.error : colors.border}`,
-            borderRadius: borders.radius.button,
-            outline: 'none',
-            backgroundColor: colors.bgPaper,
-            color: colors.textPrimary,
+            flex: '1 1 240px', padding: pad, fontSize: fs,
+            border: `1px solid ${state === 'error' ? colors.danger : colors.borderMid}`,
+            borderRadius: 8, outline: 'none',
+            fontFamily: 'inherit', color: colors.textPrimary, background: colors.bgWhite,
           }}
         />
         <button
           type="submit"
           disabled={state === 'loading'}
           style={{
-            height: inputHeight,
-            padding: '0 24px',
-            fontSize,
-            fontWeight: 600,
-            color: '#fff',
-            backgroundColor: state === 'loading' ? colors.primaryDark : colors.primary,
-            border: 'none',
-            borderRadius: borders.radius.button,
+            padding: pad, fontSize: fs, fontWeight: 600,
+            background: goldButton ? colors.gold : colors.primary,
+            color: goldButton ? colors.primaryDarker : colors.bgWhite,
+            border: 'none', borderRadius: 8,
             cursor: state === 'loading' ? 'not-allowed' : 'pointer',
-            whiteSpace: 'nowrap',
+            display: 'flex', alignItems: 'center', gap: 8,
+            fontFamily: 'inherit',
           }}
         >
           {state === 'loading' ? 'Submitting…' : ctaLabel}
+          {showArrow && state !== 'loading' && <ArrowRight size={16} />}
         </button>
       </div>
       {state === 'error' && (
-        <p style={{ marginTop: 8, fontSize: 13, color: colors.error }}>{errorMsg}</p>
+        <p style={{ marginTop: 8, fontSize: 13, color: colors.danger }}>{errorMsg}</p>
       )}
     </form>
   )

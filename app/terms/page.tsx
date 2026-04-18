@@ -14,7 +14,7 @@ export default function TermsPage() {
         ← Back to home
       </a>
       <h1 style={{ fontSize: 32, fontWeight: 700, color: colors.textPrimary, marginBottom: 8 }}>Terms of Service</h1>
-      <p style={{ fontSize: 14, color: colors.textDisabled, marginBottom: 40 }}>Last updated: April 2026</p>
+      <p style={{ fontSize: 14, color: colors.textMuted, marginBottom: 40 }}>Last updated: April 2026</p>
 
       <div style={{ fontSize: 16, lineHeight: 1.8, color: colors.textSecondary, display: 'flex', flexDirection: 'column', gap: 24 }}>
         <p>
@@ -43,7 +43,7 @@ export default function TermsPage() {
           Questions? Email us at legal@{meta.domain}.
         </p>
 
-        <p style={{ fontSize: 13, color: colors.textDisabled, fontStyle: 'italic', borderTop: `1px solid ${colors.border}`, paddingTop: 24 }}>
+        <p style={{ fontSize: 13, color: colors.textMuted, fontStyle: 'italic', borderTop: `1px solid ${colors.borderLight}`, paddingTop: 24 }}>
           This is placeholder legal content. It will be replaced with reviewed legal copy before public launch.
         </p>
       </div>

@@ -1,6 +1,5 @@
 import Nav from '@/components/Nav'
 import Hero from '@/components/Hero'
-import CredibilityStrip from '@/components/CredibilityStrip'
 import ProblemSection from '@/components/ProblemSection'
 import SignalsPreview from '@/components/SignalsPreview'
 import MoatsSection from '@/components/MoatsSection'
@@ -14,7 +13,6 @@ export default function HomePage() {
       <Nav />
       <main>
         <Hero />
-        <CredibilityStrip />
         <ProblemSection />
         <SignalsPreview />
         <MoatsSection />

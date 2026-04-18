@@ -4,57 +4,36 @@ import { footer } from '@/lib/content'
 
 export default function Footer() {
   return (
-    <footer
-      style={{
-        backgroundColor: '#0a0a0a',
-        padding: '40px 24px',
-        borderTop: `1px solid rgba(255,255,255,0.06)`,
-      }}
-    >
-      <div
-        style={{
-          maxWidth: 1100,
-          margin: '0 auto',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 24,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Image src="/brand/logo.svg" alt="House Money Portfolio" width={28} height={28} />
-          <Image src="/brand/wordmark.svg" alt="House Money Portfolio" width={130} height={28} />
-        </div>
+    <footer style={{ background: colors.bgPaper, padding: '40px 24px', borderTop: `1px solid ${colors.borderLight}` }}>
+      <div style={{
+        maxWidth: 1200, margin: '0 auto',
+        display: 'flex', flexWrap: 'wrap', gap: 24,
+        alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+          <Image src="/brand/logo.svg" alt="" width={32} height={32} />
+          <Image src="/brand/wordmark.svg" alt="House Money Portfolio" width={140} height={26} style={{ height: 26, width: 'auto' }} />
+        </a>
 
-        <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)', textAlign: 'center', flex: '1 1 auto' }}>
-          {footer.tagline}
-        </p>
-
-        <div style={{ display: 'flex', gap: 20, alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px 32px', fontSize: 13, color: colors.textMuted }}>
+          <span>{footer.entity}</span>
+          <a href={`mailto:${footer.email}`} style={{ color: colors.textMuted, textDecoration: 'none' }}>
+            {footer.email}
+          </a>
           {footer.links.map(link => (
-            <a
-              key={link.href}
-              href={link.href}
-              style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', textDecoration: 'none' }}
-            >
+            <a key={link.href} href={link.href} style={{ color: colors.textMuted, textDecoration: 'none' }}>
               {link.label}
             </a>
           ))}
+          <span>© {new Date().getFullYear()}</span>
         </div>
       </div>
 
-      <div
-        style={{
-          maxWidth: 1100,
-          margin: '20px auto 0',
-          paddingTop: 20,
-          borderTop: '1px solid rgba(255,255,255,0.06)',
-          textAlign: 'center',
-          fontSize: 12,
-          color: 'rgba(255,255,255,0.2)',
-        }}
-      >
+      <div style={{
+        maxWidth: 1200, margin: '24px auto 0', paddingTop: 20,
+        borderTop: `1px solid ${colors.borderLight}`,
+        fontSize: 11, color: colors.textMuted, lineHeight: 1.6,
+      }}>
         {footer.legal}
       </div>
     </footer>

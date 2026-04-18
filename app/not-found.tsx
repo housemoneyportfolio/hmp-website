@@ -8,7 +8,7 @@ export default function NotFound() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: colors.bgDefault,
+        backgroundColor: colors.bgPaper,
         padding: 24,
         textAlign: 'center',
       }}
