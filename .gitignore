@@ -147,7 +147,9 @@ vite.config.ts.timestamp-*
 *.tfstate
 *.tfstate.*
 .terraform/
-.terraform.lock.hcl
+infra/tfplan
+infra/plan.txt
+infra/.lambda_build/
 
 # Local env overrides
 .env.local

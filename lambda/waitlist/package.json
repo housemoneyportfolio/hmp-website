@@ -1,0 +1,10 @@
+{
+  "name": "hmp-waitlist-handler",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Waitlist form handler — writes to DynamoDB and sends Resend notification",
+  "main": "index.mjs",
+  "engines": {
+    "node": ">=18"
+  }
+}

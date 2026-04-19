@@ -14,6 +14,10 @@
 | `MKT_{NNN}` | Marketing site features — new pages, sections, integrations |
 | `FIX_{NNN}` | Bug fixes — broken behavior, regressions, content errors |
 
+### Spec Granularity Rule
+
+Numbers are assigned at the **deliverable level**, not the phase level. A multi-phase deliverable is one spec file (`MKT_001_bootstrap_marketing_site.md`) with phases as sections. Never create phase-specific spec files. Phase completion is tracked in `QUEUE.md` Completed entries ("MKT_001 Phase N").
+
 ## 2. Shipped Specs
 
 | Spec ID | Title | Status | Completed |

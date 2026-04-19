@@ -69,6 +69,12 @@ These are non-negotiable. If you're about to break one, stop and ask.
 - Never omit `aria-label` on icon-only buttons
 - Never use `<div>` or `<span>` as interactive elements — use semantic HTML (`<button>`, `<a>`)
 
+### Infrastructure
+- Never use a generic S3 bucket name for Terraform state (e.g. `hmp-terraform-state`) — S3 names are globally unique across all AWS accounts; suffix with account ID (`hmp-website-terraform-state-897545367327`) to guarantee ownership
+- Never assume an `aws s3api create-bucket` succeeded without verifying with `aws s3 ls | grep <name>` — the command can fail silently, and `terraform init` will hit a stranger's bucket with the same name and return a confusing 301/AccessDenied
+- Never diagnose an S3 `AccessDenied` as a permissions problem without first checking `aws s3 ls` — if the bucket isn't in the account listing, the real cause is a name collision with a bucket owned by another AWS account, not a missing IAM policy
+- Never use a kickoff prompt as a substitute for a spec — a detailed operator prompt is instructions, not a spec; create the spec file in `ops/specs/` before or immediately after scaffolding infrastructure files
+
 ---
 
 ## Rules Added Per Feature
@@ -84,6 +90,10 @@ These are non-negotiable. If you're about to break one, stop and ask.
 | 2026-04-18 | MKT_001 Phase 3 | Never use `opengraph-image.tsx` / `ImageResponse` in static export — use SVG + sharp rasterization |
 | 2026-04-18 | MKT_002 | Never start implementation before porting workflow infrastructure |
 | 2026-04-18 | MKT_002 | Never assume ops/specs/ files don't exist — check disk before creating; Claude Code harness may have seeded them |
+| 2026-04-18 | MKT_001 Phase 4 | Never use a generic S3 bucket name for Terraform state — suffix with account ID to guarantee global uniqueness |
+| 2026-04-18 | MKT_001 Phase 4 | Never assume `aws s3api create-bucket` succeeded — verify with `aws s3 ls | grep <name>` before running `terraform init` |
+| 2026-04-18 | MKT_001 Phase 4 | Never diagnose S3 AccessDenied as a permissions problem without checking `aws s3 ls` first — missing from list = name collision, not IAM |
+| 2026-04-18 | MKT_001 Phase 4 | Never use a kickoff prompt as a substitute for a spec — create the spec file before or immediately after scaffolding |
 
 ---
 
@@ -137,6 +147,10 @@ Run `/spec-first` for the full workflow. Never implement without an approved spe
 | Spec template | `ops/specs/_TEMPLATE.md` |
 | Brand tokens | `lib/brand.ts` |
 | Page components | `app/{page}/page.tsx` (server) + `app/{page}/ui/{Page}Client.tsx` (client) |
+
+### Multi-Phase Specs
+
+Specs are numbered at the **deliverable level**, not the phase level. A multi-phase deliverable (e.g. MKT_001) is one spec file with phases as sections and gates between them. Do NOT create separate spec files per phase (no `MKT_001_phase4_*.md`). Phase completion is tracked in `QUEUE.md` Completed entries using the notation "MKT_001 Phase N" — the master spec file remains the single source of truth.
 
 ---
 

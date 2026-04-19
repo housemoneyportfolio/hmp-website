@@ -9,19 +9,20 @@
 
 | Spec ID | Title | Priority | Status |
 |---|---|---|---|
-| MKT_002 | Port spec-first workflow infrastructure from HMP | P0 | COMPLETE |
+| MKT_001 Phase 5 | Deploy pipeline + Cloudflare cutover | P0 | IN_PROGRESS |
 
 ## Next Up
 
 | Spec ID | Title | Priority | Blocked By |
 |---|---|---|---|
-| MKT_001 Phase 4 | Terraform infrastructure (S3, Lambda, DynamoDB, IAM) | P0 | MKT_002 |
-| MKT_001 Phase 5 | Deploy pipeline + Cloudflare cutover | P0 | MKT_001 Phase 4 |
 
 ## Deferred
 
 | Spec ID | Title | Trigger to activate | Plan Status |
 |---|---|---|---|
+| OPS_001 | CloudWatch alarm on Lambda errors + notification | After MKT_001 Phase 5 ships | No spec yet |
+| OPS_002 | Scope hmp-terraform IAM permissions; rotate access keys | After MKT_001 Phase 5 ships | No spec yet |
+| OPS_003 | Migrate S3 origin to Cloudflare Worker with SigV4 fetch | After site has traction | No spec yet |
 
 ## Completed (Last 10)
 
@@ -31,4 +32,5 @@
 | MKT_001 Phase 2 | Port April 17 JSX mockup into components | 2026-04-18 |
 | MKT_001 Phase 2 revised | Full rewrite to match HMPMarketingSite.jsx exactly | 2026-04-18 |
 | MKT_001 Phase 3 | SEO, OG image, favicon, robots, sitemap, JSON-LD | 2026-04-18 |
+| MKT_001 Phase 4 | Terraform infrastructure (S3, Lambda, DynamoDB, IAM) | 2026-04-18 |
 | MKT_002 | Port spec-first workflow infrastructure from HMP | 2026-04-18 |
