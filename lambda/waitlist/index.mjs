@@ -55,7 +55,7 @@ export const handler = async (event) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "waitlist@housemoneyportfolio.com",
+        from: "waitlist@send.housemoneyportfolio.com",
         to: [process.env.NOTIFICATION_EMAIL],
         subject: "New waitlist signup",
         text: `New signup: ${email}`,
