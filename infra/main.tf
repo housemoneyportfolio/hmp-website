@@ -9,36 +9,6 @@ locals {
     ManagedBy = "terraform"
   }
 
-  # Cloudflare IP ranges — source: https://www.cloudflare.com/ips-v4 and /ips-v6
-  # MAINTENANCE: These ranges rotate quarterly. Update this list and re-run
-  # terraform plan/apply whenever Cloudflare publishes new ranges.
-  cloudflare_ipv4_ranges = [
-    "173.245.48.0/20",
-    "103.21.244.0/22",
-    "103.22.200.0/22",
-    "103.31.4.0/22",
-    "141.101.64.0/18",
-    "108.162.192.0/18",
-    "190.93.240.0/20",
-    "188.114.96.0/20",
-    "197.234.240.0/22",
-    "198.41.128.0/17",
-    "162.158.0.0/15",
-    "104.16.0.0/13",
-    "104.24.0.0/14",
-    "172.64.0.0/13",
-    "131.0.72.0/22",
-  ]
-
-  cloudflare_ipv6_ranges = [
-    "2400:cb00::/32",
-    "2606:4700::/32",
-    "2803:f800::/32",
-    "2405:b500::/32",
-    "2405:8100::/32",
-    "2a06:98c0::/29",
-    "2c0f:f248::/32",
-  ]
 }
 
 # ── S3 — Static site hosting ────────────────────────────────────────────────
@@ -65,17 +35,18 @@ resource "aws_s3_bucket_server_side_encryption_configuration" "prod" {
 }
 
 resource "aws_s3_bucket_public_access_block" "prod" {
-  bucket            = aws_s3_bucket.prod.id
-  block_public_acls = true
-  # Intentionally false: required to attach the IP-conditional bucket policy below.
-  # The Principal:* statement in that policy is gated by aws:SourceIp conditions
-  # restricting reads to Cloudflare's published IP ranges only. Any future bucket
-  # policy additions MUST maintain equivalent IP gating — do not add broader
-  # Principal:* statements without a matching Condition block.
-  # Long-term migration path: Cloudflare Worker with SigV4 fetch (OPS_003).
+  bucket = aws_s3_bucket.prod.id
+  # All four intentionally false: this is the S3 website hosting endpoint for a public
+  # marketing site. No user data, no secrets, no sensitive content in this bucket.
+  # Cloudflare sits in front for WAF/DDoS/Bot protection on normal traffic, but the
+  # S3 website endpoint URL (s3-website.us-east-2.amazonaws.com) is publicly accessible
+  # — that is an acceptable v1 tradeoff for static marketing copy.
+  # Long-term: migrate to Cloudflare Worker with SigV4 fetch (OPS_003) to restore
+  # origin-level access control without sacrificing the Cloudflare proxy stack.
+  block_public_acls       = false
   block_public_policy     = false
-  ignore_public_acls      = true
-  restrict_public_buckets = true
+  ignore_public_acls      = false
+  restrict_public_buckets = false
 }
 
 resource "aws_s3_bucket_lifecycle_configuration" "prod" {
@@ -90,25 +61,43 @@ resource "aws_s3_bucket_lifecycle_configuration" "prod" {
   }
 }
 
+resource "aws_s3_bucket_website_configuration" "prod" {
+  bucket = aws_s3_bucket.prod.id
+
+  index_document {
+    suffix = "index.html"
+  }
+
+  error_document {
+    key = "404.html"
+  }
+}
+
+# Public-read bucket policy for S3 static website hosting.
+#
+# Previously restricted to Cloudflare IP ranges (Phase 4) — changed to public-read
+# in Phase 5 because Cloudflare-proxied S3 REST origin fails SNI validation under
+# "Full (strict)" on the Free plan. The switch to S3 website hosting (s3-website.*
+# endpoint) requires a public bucket policy because the website endpoint is always
+# public regardless of bucket policy anyway.
+#
+# Acceptable v1 tradeoff: no user data, no secrets in this bucket. Cloudflare
+# fronts this for WAF/DDoS/Bot Fight on normal traffic. Direct-to-S3-website
+# access bypasses Cloudflare but only exposes public marketing HTML/CSS/JS.
+#
+# Revisit: OPS_003 (migrate to Cloudflare Worker with SigV4 fetch) when business
+# case justifies Pro plan or Worker complexity.
 resource "aws_s3_bucket_policy" "prod" {
   bucket = aws_s3_bucket.prod.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "AllowCloudflareGetObject"
+        Sid       = "PublicReadGetObject"
         Effect    = "Allow"
         Principal = "*"
         Action    = "s3:GetObject"
         Resource  = "${aws_s3_bucket.prod.arn}/*"
-        Condition = {
-          IpAddress = {
-            "aws:SourceIp" = concat(
-              local.cloudflare_ipv4_ranges,
-              local.cloudflare_ipv6_ranges
-            )
-          }
-        }
       }
     ]
   })

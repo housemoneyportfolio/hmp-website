@@ -23,6 +23,7 @@
 | OPS_001 | CloudWatch alarm on Lambda errors + notification | After MKT_001 Phase 5 ships | No spec yet |
 | OPS_002 | Scope hmp-terraform IAM permissions; rotate access keys | After MKT_001 Phase 5 ships | No spec yet |
 | OPS_003 | Migrate S3 origin to Cloudflare Worker with SigV4 fetch | After site has traction | No spec yet |
+| OPS_004 | Cloudflare proxy for Lambda Function URL + rate limiting (10 req/min per IP) | After site has traction or abuse observed | No spec yet |
 
 ## Completed (Last 10)
 

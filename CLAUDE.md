@@ -76,6 +76,8 @@ These are non-negotiable. If you're about to break one, stop and ask.
 - Never use a kickoff prompt as a substitute for a spec — a detailed operator prompt is instructions, not a spec; create the spec file in `ops/specs/` before or immediately after scaffolding infrastructure files
 - Never expect `BlockPublicPolicy = true` to permit a `Principal: "*"` S3 bucket policy even when gated by `aws:SourceIp` — AWS evaluates the Principal field to classify a policy as "public", not the effective access after conditions; set `block_public_policy = false` deliberately with a comment, keep the other three public access block settings on
 - Never set a Lambda `from` email address to a domain that isn't exactly the verified Resend sending domain — subdomains are verified separately from their apex; `send.example.com` verified does NOT permit sends from `@example.com`; mismatch returns Lambda 200 (DDB write succeeded) but Resend silently drops the email, visible only in CloudWatch as `Resend error 403 domain not verified`
+- Never plan S3-behind-Cloudflare via the REST endpoint (`s3.*.amazonaws.com`) on the Cloudflare Free plan — Cloudflare sends the proxied hostname as SNI, not the S3 bucket hostname; this fails TLS under "Full (strict)". Host Header Override that fixes it requires Cloudflare Pro ($20/mo). For Free-plan static sites: use S3 website endpoint (`s3-website.*.amazonaws.com`) + Cloudflare SSL mode "Full" + public bucket policy
+- Never add `trailingSlash: true` to `next.config.mjs` while the project has App Router image metadata files (`app/icon.svg`, `app/apple-icon.png`, `app/opengraph-image.*`, `app/twitter-image.*`) — in this project's Next.js 14 setup, trailing-slash mode produces `PageNotFoundError` on the generated metadata routes during build. If directory-style URLs are needed for S3 hosting, move the metadata files to `public/` and use explicit `<link>` tags in `layout.tsx` instead
 
 ---
 
@@ -98,6 +100,8 @@ These are non-negotiable. If you're about to break one, stop and ask.
 | 2026-04-18 | MKT_001 Phase 4 | Never use a kickoff prompt as a substitute for a spec — create the spec file before or immediately after scaffolding |
 | 2026-04-18 | MKT_001 Phase 4 | Never expect `BlockPublicPolicy = true` to allow `Principal:*` bucket policy — AWS labels it "public" regardless of `aws:SourceIp` conditions |
 | 2026-04-18 | MKT_001 Phase 4 | Never use a `from` address whose domain differs from the verified Resend sending domain — Lambda returns 200 but email is silently dropped |
+| 2026-04-18 | MKT_001 Phase 5 | Never use S3 REST endpoint as Cloudflare proxied origin on Free plan — SNI mismatch fails TLS; use website endpoint + SSL "Full" |
+| 2026-04-18 | MKT_001 Phase 5 | Never add `trailingSlash: true` with Next.js 14 image metadata files — breaks build on `apple-icon.png` / `icon.svg` routes |
 
 ---
 
