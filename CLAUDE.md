@@ -74,6 +74,8 @@ These are non-negotiable. If you're about to break one, stop and ask.
 - Never assume an `aws s3api create-bucket` succeeded without verifying with `aws s3 ls | grep <name>` — the command can fail silently, and `terraform init` will hit a stranger's bucket with the same name and return a confusing 301/AccessDenied
 - Never diagnose an S3 `AccessDenied` as a permissions problem without first checking `aws s3 ls` — if the bucket isn't in the account listing, the real cause is a name collision with a bucket owned by another AWS account, not a missing IAM policy
 - Never use a kickoff prompt as a substitute for a spec — a detailed operator prompt is instructions, not a spec; create the spec file in `ops/specs/` before or immediately after scaffolding infrastructure files
+- Never expect `BlockPublicPolicy = true` to permit a `Principal: "*"` S3 bucket policy even when gated by `aws:SourceIp` — AWS evaluates the Principal field to classify a policy as "public", not the effective access after conditions; set `block_public_policy = false` deliberately with a comment, keep the other three public access block settings on
+- Never set a Lambda `from` email address to a domain that isn't exactly the verified Resend sending domain — subdomains are verified separately from their apex; `send.example.com` verified does NOT permit sends from `@example.com`; mismatch returns Lambda 200 (DDB write succeeded) but Resend silently drops the email, visible only in CloudWatch as `Resend error 403 domain not verified`
 
 ---
 
@@ -94,6 +96,8 @@ These are non-negotiable. If you're about to break one, stop and ask.
 | 2026-04-18 | MKT_001 Phase 4 | Never assume `aws s3api create-bucket` succeeded — verify with `aws s3 ls | grep <name>` before running `terraform init` |
 | 2026-04-18 | MKT_001 Phase 4 | Never diagnose S3 AccessDenied as a permissions problem without checking `aws s3 ls` first — missing from list = name collision, not IAM |
 | 2026-04-18 | MKT_001 Phase 4 | Never use a kickoff prompt as a substitute for a spec — create the spec file before or immediately after scaffolding |
+| 2026-04-18 | MKT_001 Phase 4 | Never expect `BlockPublicPolicy = true` to allow `Principal:*` bucket policy — AWS labels it "public" regardless of `aws:SourceIp` conditions |
+| 2026-04-18 | MKT_001 Phase 4 | Never use a `from` address whose domain differs from the verified Resend sending domain — Lambda returns 200 but email is silently dropped |
 
 ---
 
