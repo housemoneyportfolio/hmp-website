@@ -3,7 +3,7 @@
 **Repo:** `hmp-website` (new, separate from HMP monorepo)
 **Target:** `housemoneyportfolio.com` (root apex + www)
 **Date drafted:** 2026-04-18
-**Status:** Ready for Claude Code execution
+**Status:** IN_PROGRESS (Phase 5 active — Phases 1–4 complete)
 **Owner:** Q
 
 ---
@@ -235,26 +235,32 @@ Claude Code executes in five phases. Each phase has a clear completion gate. Q r
 
 **Gate:** Lighthouse scores: Performance ≥ 95, Accessibility ≥ 95, Best Practices = 100, SEO = 100 on local build. OG image previews correctly when URL is pasted into a Slack or LinkedIn draft (Q verifies by drafting a message, not sending).
 
-### Phase 4: Infrastructure (Terraform)
+### Phase 4: Infrastructure (Terraform) ✅ COMPLETE 2026-04-18
+
 - Write `infra/main.tf` provisioning:
   - S3 bucket `hmp-website-prod` (private, versioned, 30-day version expiry, SSE-S3, block all public access)
   - S3 bucket policy allowing read access from Cloudflare IP ranges only (documented list; acknowledge the maintenance burden)
+    - **Actual:** `block_public_policy = false` required — AWS blocks `Principal:*` policies regardless of `aws:SourceIp` conditions. See Amendment 2.
   - DynamoDB table `hmp-website-waitlist` (partition key `email`, on-demand billing, point-in-time recovery)
   - Lambda function `hmp-website-waitlist-handler` with Function URL (auth type NONE, CORS restricted to `housemoneyportfolio.com`)
-  - Lambda execution IAM role (DynamoDB PutItem on the table, Secrets Manager read on resend key, CloudWatch logs)
+  - Lambda execution IAM role (DynamoDB PutItem on the table, Secrets Manager read on resend key, CloudWatch logs) — all specific ARNs, no `Resource: "*"`
   - Secrets Manager entry `/hmp/prod/marketing/resend_api_key`
   - IAM user `hmp-website-deploy` with policy allowing only `s3:PutObject`, `s3:DeleteObject`, `s3:ListBucket` on the marketing bucket
-  - CloudWatch log group for the Lambda
-- Configure `infra/backend.tf` for separate state file: `s3://hmp-terraform-state/hmp-website/terraform.tfstate` (adjust path if existing backend structure differs — verify with Q before apply)
+  - CloudWatch log group for the Lambda (30-day retention)
+- Configure `infra/backend.tf` for separate state file
+  - **Actual state bucket:** `hmp-website-terraform-state-897545367327` in `us-east-2` — see Amendment 1
+  - State key: `hmp-website/terraform.tfstate`
 - Write Lambda handler `lambda/waitlist/index.mjs`:
   - Parse JSON body, validate email format
-  - Write to DynamoDB with timestamp and source tag
+  - Write to DynamoDB with timestamp and source tag; `ConditionExpression` deduplicates on `email`
   - POST to Resend API with notification email to `quentrell@housemoneyportfolio.com`
+  - **Actual `from` address:** `waitlist@send.housemoneyportfolio.com` — see Amendment 3
   - Return 200 on success, 400 on bad input, 500 on internal error
   - All errors logged to CloudWatch, never leak details in response body
 - Terraform outputs: S3 bucket name, Lambda Function URL, deploy user access key (sensitive)
+- **Terraform provider:** `hashicorp/aws ~> 5.0`, `hashicorp/archive ~> 2.0`; lock file committed at `infra/.terraform.lock.hcl`
 
-**Gate:** `terraform plan` runs clean. Q reviews the plan. `terraform apply` succeeds. Lambda Function URL returns 400 when POSTed with invalid payload, 200 with valid payload. Test entry appears in DynamoDB. Test notification email arrives at `quentrell@housemoneyportfolio.com`.
+**Gate:** ✅ Met — `terraform plan` clean (0 destroy). `terraform apply` succeeded (16 resources). Lambda invocation returns 400 on invalid payload, 200 on valid. Test entry in DynamoDB. Notification email `New signup: quentrell@housemoneyportfolio.com` arrived at M365 inbox. `infra/README.md` complete with Cloudflare manual steps, maintenance, post-apply setup, and security posture sections.
 
 ### Phase 5: Deploy pipeline and cutover
 - Write `.github/workflows/deploy.yml`:
@@ -396,3 +402,53 @@ Do:
 - Keep components focused — one component per file, no nested subcomponents beyond trivially small helpers
 - Ship Phase 1 before touching Phase 2
 - Flag missing brand assets in gate reports rather than fabricating substitutes beyond trivial placeholders
+
+---
+
+## 13. Spec Amendments
+
+### Amendment 1 — Terraform state bucket name collision (2026-04-18, Phase 4)
+
+The kickoff prompt specified state bucket `hmp-terraform-state`. During `terraform init`, this bucket was found to be owned by an unknown party in `eu-central-1` — the bucket name was taken globally. `aws s3 ls` confirmed the bucket did not exist in account `897545367327`. The original `aws s3api create-bucket` command had silently failed.
+
+**Resolution:** Operator created new state bucket `hmp-website-terraform-state-897545367327` in `us-east-2`. The account-ID suffix is now standard convention for this project to prevent future name collisions. `infra/backend.tf` references this name.
+
+**Rule added to CLAUDE.md:** Never use a generic S3 bucket name for Terraform state — suffix with account ID to guarantee global uniqueness. Always verify `create-bucket` succeeded with `aws s3 ls | grep <name>` before running `terraform init`.
+
+---
+
+### Amendment 2 — `block_public_policy = false` required for IP-conditional bucket policy (2026-04-18, Phase 4)
+
+The spec called for an S3 bucket policy restricting reads to Cloudflare IP ranges with all public access block settings on. During `terraform apply`, the bucket policy creation failed with `AccessDenied: public policies are prevented by the BlockPublicPolicy setting`. AWS classifies any policy with `Principal: "*"` as a "public" policy — even when the effective access is restricted by an `aws:SourceIp` condition.
+
+**Resolution:** Set `block_public_policy = false` with a prominent inline comment explaining the intent. The other three public access block settings (`block_public_acls`, `ignore_public_acls`, `restrict_public_buckets`) remain `true`. The IP condition in the bucket policy is the operative access control. Long-term migration path: Cloudflare Worker with SigV4 fetch (tracked as OPS_003).
+
+Security posture documented in `infra/README.md` under "Security Posture" section.
+
+**Rule added to CLAUDE.md:** Never expect `BlockPublicPolicy = true` to permit a `Principal:*` bucket policy even when gated by `aws:SourceIp` — AWS evaluates the Principal field to classify a policy as public, not effective access after conditions.
+
+---
+
+### Amendment 3 — Lambda `from` address must use verified Resend sending subdomain (2026-04-18, Phase 4)
+
+The initial Lambda code set `from: "waitlist@housemoneyportfolio.com"`. The Resend-verified sending domain is `send.housemoneyportfolio.com` (a subdomain). Resend rejected sends with HTTP 403 `domain not verified`. The Lambda returned 200 (DDB write succeeded) but silently dropped the notification. The error was only visible in CloudWatch: `Resend error 403 {"message":"The housemoneyportfolio.com domain is not verified..."}`.
+
+**Resolution:** Changed `from` to `waitlist@send.housemoneyportfolio.com`. Redeployed via `terraform apply` (Lambda source hash update only). End-to-end verified: notification email `New signup: quentrell@housemoneyportfolio.com` arrived in M365 inbox.
+
+**Rule added to CLAUDE.md:** Never set a Lambda `from` email address to a domain that isn't exactly the verified Resend sending domain — subdomains are verified separately from their apex.
+
+---
+
+### Amendment 4 — Phase-specific spec files rejected (2026-04-18, Phase 4)
+
+During Phase 4, a separate spec file `MKT_001_phase4_terraform_infrastructure.md` was created to track the phase. Operator rejected this pattern: specs are numbered at the deliverable level, not the phase level. A multi-phase deliverable stays as one spec file with phases as sections. Phase completion is tracked in `QUEUE.md` Completed entries.
+
+**Resolution:** Deleted phase-specific spec file. Updated `CLAUDE.md` Naming Conventions and `SPEC_RECONCILIATION.md` with the spec granularity rule.
+
+---
+
+### Amendment 5 — `hmp-terraform` has AdministratorAccess (2026-04-18, Phase 4, non-blocking)
+
+IAM diagnostics during the state bucket investigation revealed `hmp-terraform` has AWS-managed `AdministratorAccess` policy — full account permissions. This is broader than needed for Terraform operations.
+
+**Not blocking Phase 4 or Phase 5.** Tracked as OPS_002: "Scope hmp-terraform IAM permissions; rotate access keys" in `ops/specs/QUEUE.md` Deferred.

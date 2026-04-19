@@ -22,7 +22,7 @@ Numbers are assigned at the **deliverable level**, not the phase level. A multi-
 
 | Spec ID | Title | Status | Completed |
 |---------|-------|--------|-----------|
-| MKT_001 | Bootstrap Marketing Site (multi-phase) | COMPLETE (Phases 1–3) | 2026-04-18 |
+| MKT_001 | Bootstrap Marketing Site (multi-phase) | IN_PROGRESS (Phases 1–4 complete, Phase 5 active) | 2026-04-18 |
 | MKT_002 | Port spec-first workflow infrastructure | COMPLETE | 2026-04-18 |
 
 ## 3. Retired / Reserved Numbers
