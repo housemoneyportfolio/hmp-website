@@ -6,7 +6,7 @@ Provisions the AWS infrastructure for `housemoneyportfolio.com`.
 
 | Resource | Name | Purpose |
 |---|---|---|
-| S3 bucket | `hmp-website-prod` | Static site hosting (public website endpoint; Cloudflare proxies it) |
+| S3 bucket | `housemoneyportfolio.com` | Static site hosting (public website endpoint; Cloudflare proxies it) |
 | DynamoDB table | `hmp-website-waitlist` | Waitlist email storage |
 | Lambda function | `hmp-website-waitlist-handler` | Waitlist form API |
 | Lambda Function URL | — | Public HTTPS endpoint for the Lambda |
@@ -102,7 +102,7 @@ Cloudflare dashboard → DNS → Records → Add record:
 
 | Type | Name | Target | Proxy |
 |------|------|--------|-------|
-| CNAME | `@` (apex) | `hmp-website-prod.s3-website.us-east-2.amazonaws.com` | **ON (orange cloud)** |
+| CNAME | `@` (apex) | `housemoneyportfolio.com.s3-website.us-east-2.amazonaws.com` | **ON (orange cloud)** |
 | CNAME | `www` | `housemoneyportfolio.com` | **ON (orange cloud)** |
 
 > **Important:** use `s3-website.us-east-2.amazonaws.com`, NOT `s3.us-east-2.amazonaws.com`. The website endpoint handles `index.html` fallback; the REST endpoint does not.
@@ -153,11 +153,11 @@ Complete this sequence in order. The point of no return is Step 3 (creating DNS 
 git checkout <previous-commit-sha>
 NEXT_PUBLIC_WAITLIST_ENDPOINT=https://6woorghof75bdossrpr7ceo3bm0tmkcf.lambda-url.us-east-2.on.aws/ npm run build
 
-aws s3 sync out/ s3://hmp-website-prod/ \
+aws s3 sync out/ s3://housemoneyportfolio.com/ \
   --delete \
   --cache-control "public,max-age=31536000,immutable"
 
-aws s3 cp out/ s3://hmp-website-prod/ \
+aws s3 cp out/ s3://housemoneyportfolio.com/ \
   --recursive \
   --exclude "*" \
   --include "*.html" \
@@ -172,7 +172,7 @@ aws s3 cp out/ s3://hmp-website-prod/ \
 
 The S3 bucket uses website hosting mode with a public-read bucket policy. All four public access block settings are `false`. This means:
 
-- Direct requests to `hmp-website-prod.s3-website.us-east-2.amazonaws.com` are publicly accessible, bypassing Cloudflare
+- Direct requests to `housemoneyportfolio.com.s3-website.us-east-2.amazonaws.com` are publicly accessible, bypassing Cloudflare
 - This is acceptable for static marketing HTML/CSS/JS — no user data, no secrets in the bucket
 - Cloudflare fronts normal traffic for WAF, DDoS protection, Bot Fight Mode, and analytics
 
@@ -182,7 +182,7 @@ The S3 bucket uses website hosting mode with a public-read bucket policy. All fo
 
 ### Deploy IAM user scope
 
-`hmp-website-deploy` has exactly two permissions: `s3:PutObject` and `s3:DeleteObject` on `hmp-website-prod/*`, plus `s3:ListBucket` on the bucket itself. If the GitHub Actions secret leaks, blast radius is limited to defacing the marketing site — no database, Lambda, or secrets access.
+`hmp-website-deploy` has exactly two permissions: `s3:PutObject` and `s3:DeleteObject` on `housemoneyportfolio.com/*`, plus `s3:ListBucket` on the bucket itself. If the GitHub Actions secret leaks, blast radius is limited to defacing the marketing site — no database, Lambda, or secrets access.
 
 ## Known Follow-ups
 

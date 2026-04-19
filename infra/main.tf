@@ -14,7 +14,7 @@ locals {
 # ── S3 — Static site hosting ────────────────────────────────────────────────
 
 resource "aws_s3_bucket" "prod" {
-  bucket = "hmp-website-prod"
+  bucket = "housemoneyportfolio.com"
   tags   = local.tags
 }
 
