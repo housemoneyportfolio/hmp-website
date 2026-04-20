@@ -104,10 +104,13 @@ Cloudflare dashboard → DNS → Records → Add record:
 |------|------|--------|-------|
 | CNAME | `@` (apex) | `housemoneyportfolio.com.s3-website.us-east-2.amazonaws.com` | **ON (orange cloud)** |
 | CNAME | `www` | `housemoneyportfolio.com` | **ON (orange cloud)** |
+| CNAME | `api` | `d-<hash>.execute-api.us-east-2.amazonaws.com` (from `terraform output api_custom_domain_target`) | **OFF (grey cloud, DNS-only)** — see note below |
 
 > **Important:** use `s3-website.us-east-2.amazonaws.com`, NOT `s3.us-east-2.amazonaws.com`. The website endpoint handles `index.html` fallback; the REST endpoint does not.
 >
 > Cloudflare performs automatic CNAME flattening at the apex — entering `@` works even though bare CNAME records are technically invalid per RFC.
+>
+> **`api.housemoneyportfolio.com` proxy status — DNS-only (FIX_001):** The `api` CNAME serves the waitlist endpoint (API Gateway HTTP API → Lambda). It must be **DNS-only** because Cloudflare Free plan proxy → APIGW regional endpoint returns persistent 521 (connection refused) even when origin is fully healthy from any non-Cloudflare client. Root cause undetermined as of FIX_001; tracked as OPS_005 (proxy restoration) and OPS_006 (Cloudflare Turnstile as a substitute for proxy-side bot mitigation). TLS termination happens at AWS using the ACM cert for `api.housemoneyportfolio.com` (issued + DNS-validated in FIX_001 Phase A; renewal automatic).
 
 #### Step 4 — WAF managed rules
 
@@ -120,9 +123,17 @@ Cloudflare dashboard → Security → WAF → Managed Rules.
 
 Cloudflare dashboard → Security → Bots → Enable **Bot Fight Mode**.
 
-#### Step 6 — Lambda rate limiting (deferred — OPS_004)
+#### Step 6 — Waitlist endpoint protection (FIX_001 supersedes OPS_004)
 
-Not configured in Phase 5. The Lambda Function URL's CORS is locked to `housemoneyportfolio.com` (set in Terraform). AWS regional DDoS protection covers the endpoint. Revisit if abuse is observed — tracked as OPS_004 (Cloudflare proxy for Lambda URL + rate limiting).
+The original Lambda Function URL was abandoned in FIX_001 (account-level block returned 403 on every invoke). The replacement is API Gateway HTTP API at `api.housemoneyportfolio.com`. Current protection layers:
+
+- **CORS** locked to `https://housemoneyportfolio.com` and `https://www.housemoneyportfolio.com` (set in Terraform on `aws_apigatewayv2_api.waitlist`)
+- **DynamoDB conditional write** dedups same email (existing handler behavior)
+- **Resend rate limit** caps email sending (50K/month account limit)
+- **AWS regional DDoS protection** covers the API Gateway endpoint
+- **No Cloudflare WAF / Bot Fight Mode** — `api.housemoneyportfolio.com` is DNS-only because proxy mode returns 521. Tracked as OPS_005
+
+For client-side bot mitigation in lieu of Cloudflare proxy, OPS_006 will add **Cloudflare Turnstile** to the waitlist form (free, server-side token verification in the Lambda).
 
 ## DNS Cutover Sequence
 

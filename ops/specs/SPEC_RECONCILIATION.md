@@ -1,9 +1,9 @@
 # Spec Number Reconciliation — Single Source of Truth
 
 > **Authority:** `ops/specs/` on disk is the single source of truth. Memory and project knowledge files are secondary and may be stale. When conflicts arise, trust what exists on disk.
-> **Last reconciled:** 2026-04-18 (MKT_002)
+> **Last reconciled:** 2026-04-20 (FIX_001)
 > **Next available MKT:** MKT_003
-> **Next available FIX:** FIX_001
+> **Next available FIX:** FIX_002
 
 ---
 
@@ -22,8 +22,9 @@ Numbers are assigned at the **deliverable level**, not the phase level. A multi-
 
 | Spec ID | Title | Status | Completed |
 |---------|-------|--------|-----------|
-| MKT_001 | Bootstrap Marketing Site (multi-phase) | IN_PROGRESS (Phases 1–4 complete, Phase 5 active) | 2026-04-18 |
+| MKT_001 | Bootstrap Marketing Site (Phases 1–5 complete) | COMPLETE | 2026-04-18 |
 | MKT_002 | Port spec-first workflow infrastructure | COMPLETE | 2026-04-18 |
+| FIX_001 | Pivot waitlist endpoint to API Gateway HTTP API behind api.housemoneyportfolio.com | COMPLETE | 2026-04-20 |
 
 ## 3. Retired / Reserved Numbers
 

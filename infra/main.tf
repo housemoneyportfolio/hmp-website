@@ -218,17 +218,13 @@ resource "aws_lambda_function" "waitlist" {
   tags = local.tags
 }
 
-resource "aws_lambda_function_url" "waitlist" {
-  function_name      = aws_lambda_function.waitlist.function_name
-  authorization_type = "NONE"
-
-  cors {
-    allow_origins = ["https://${var.domain}", "https://www.${var.domain}"]
-    allow_methods = ["POST"]
-    allow_headers = ["content-type"]
-    max_age       = 300
-  }
-}
+# NOTE: The aws_lambda_function_url "waitlist" resource was removed in FIX_001
+# Phase B. This AWS account has a server-side block on AuthType=NONE Function
+# URLs that returns 403 on every invocation regardless of the resource policy.
+# Public invocation now goes through the API Gateway HTTP API defined below.
+# The orphaned FunctionURLAllowPublicAccess resource policy statement on the
+# Lambda function is harmless (points at a nonexistent URL); optional cleanup
+# in Phase E: aws lambda remove-permission --statement-id FunctionURLAllowPublicAccess.
 
 # ── IAM — deploy user for GitHub Actions ────────────────────────────────────
 
@@ -261,4 +257,101 @@ resource "aws_iam_user_policy" "deploy" {
       }
     ]
   })
+}
+
+# ── ACM — TLS certificate for api.housemoneyportfolio.com ───────────────────
+# Fronts the API Gateway HTTP API that replaces the (blocked-by-account)
+# Lambda Function URL. DNS-validated — operator must create the validation
+# CNAME in Cloudflare with proxy OFF, then wait for Issued status before
+# dependents (APIGW custom domain) can be created. See FIX_001 Phase A.
+
+resource "aws_acm_certificate" "api" {
+  domain_name       = "api.${var.domain}"
+  validation_method = "DNS"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = local.tags
+}
+
+# Validation resource waits for ACM to flip to Issued. Operator created the
+# CNAME manually in Cloudflare (proxy OFF); this resource just blocks downstream
+# resources (custom domain) until the cert is actually usable.
+resource "aws_acm_certificate_validation" "api" {
+  certificate_arn = aws_acm_certificate.api.arn
+}
+
+# ── API Gateway HTTP API — public endpoint for waitlist Lambda ──────────────
+# Replaces the account-blocked Lambda Function URL. HTTP API uses a different
+# auth layer than Function URLs and is not affected by the account-level block.
+# Free for first 1M req/month.
+
+resource "aws_apigatewayv2_api" "waitlist" {
+  name          = "hmp-website-waitlist-api"
+  protocol_type = "HTTP"
+  description   = "Public endpoint for waitlist signups (FIX_001 replacement for Lambda Function URL)"
+
+  cors_configuration {
+    allow_origins = ["https://${var.domain}", "https://www.${var.domain}"]
+    allow_methods = ["POST", "OPTIONS"]
+    allow_headers = ["content-type"]
+    max_age       = 300
+  }
+
+  tags = local.tags
+}
+
+resource "aws_apigatewayv2_integration" "waitlist" {
+  api_id                 = aws_apigatewayv2_api.waitlist.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = aws_lambda_function.waitlist.invoke_arn
+  integration_method     = "POST"
+  payload_format_version = "2.0"
+}
+
+resource "aws_apigatewayv2_route" "waitlist_post" {
+  api_id    = aws_apigatewayv2_api.waitlist.id
+  route_key = "POST /"
+  target    = "integrations/${aws_apigatewayv2_integration.waitlist.id}"
+}
+
+resource "aws_apigatewayv2_stage" "waitlist_default" {
+  api_id      = aws_apigatewayv2_api.waitlist.id
+  name        = "$default"
+  auto_deploy = true
+
+  tags = local.tags
+}
+
+resource "aws_lambda_permission" "waitlist_apigw_invoke" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.waitlist.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.waitlist.execution_arn}/*/*"
+}
+
+# ── API Gateway custom domain — api.housemoneyportfolio.com ─────────────────
+# Stabilizes the endpoint hostname across future API Gateway recreates.
+# Cloudflare CNAME api.<domain> → target_domain_name below (proxy ON) completes
+# the path in Phase C.
+
+resource "aws_apigatewayv2_domain_name" "api" {
+  domain_name = "api.${var.domain}"
+
+  domain_name_configuration {
+    certificate_arn = aws_acm_certificate_validation.api.certificate_arn
+    endpoint_type   = "REGIONAL"
+    security_policy = "TLS_1_2"
+  }
+
+  tags = local.tags
+}
+
+resource "aws_apigatewayv2_api_mapping" "api_default" {
+  api_id      = aws_apigatewayv2_api.waitlist.id
+  domain_name = aws_apigatewayv2_domain_name.api.id
+  stage       = aws_apigatewayv2_stage.waitlist_default.id
 }
