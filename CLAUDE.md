@@ -49,6 +49,7 @@ These are non-negotiable. If you're about to break one, stop and ask.
 - Never commit with `console.log` statements left in — remove or replace with proper error handling before commit
 - Never hardcode copyright years — use `new Date().getFullYear()` for dynamic year display
 - Never add npm packages without updating `package-lock.json` — `npm ci` in CI requires lockfile sync
+- Never run `npm run build` while the operator's `npm run dev` server is active — `next build` writes to the same `.next` directory the dev server is serving from, breaking its watcher state and forcing the operator to restart their server. If type-check or build verification is needed mid-session, run `npx tsc --noEmit` instead (read-only, doesn't touch `.next`); only run `npm run build` after the operator has stopped their dev server, or warn them to expect a restart
 
 ### Scope Control
 - Never escalate a UI component change to a full-stack spec without explicit operator approval — default to the smallest frontend-only scope first
@@ -113,6 +114,7 @@ These are non-negotiable. If you're about to break one, stop and ask.
 | 2026-04-19 | FIX_001 | Never assume CLI feature availability equals AWS API availability — newer service features may not be exposed in older CLI versions |
 | 2026-04-20 | FIX_001 | Never assume APIGW regional custom domain `DomainStatus: AVAILABLE` means fully propagated — wait up to 40 min before debugging connectivity |
 | 2026-04-20 | FIX_001 | Never proxy APIGW regional custom domains through Cloudflare Free without testing E2E — persistent 521 with no clear cause; use DNS-only + Turnstile (OPS_005, OPS_006) |
+| 2026-04-20 | MKT_003 | Never run `npm run build` while operator's `npm run dev` is active — trampled `.next` cache breaks the dev server; use `npx tsc --noEmit` for read-only type checks mid-session |
 
 ---
 

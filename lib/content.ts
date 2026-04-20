@@ -94,18 +94,14 @@ export const moats = {
 export const founder = {
   eyebrow:      'THE FOUNDER',
   name:         'Quentrell Green',
-  title:        'FOUNDER & ARCHITECT',
-  credentials:  [
-    { label: 'ENTERPRISE ARCHITECT', value: 'QGE / GGIT' },
-    { label: 'FORMERLY',             value: 'Senior Network\nEngineering Manager' },
-  ],
+  title:        'FOUNDER',
   headshotAlt:  'Quentrell Green, Founder',
   headline:     ['From building control planes for networks', 'to building one for capital.'],
   headlineAccentLine: 1,
   bio: [
-    'I spent over a decade managing enterprise network infrastructure — building systems where one bad decision propagates fast and recovery is measured in customer impact. The hard problems were never the routing protocols. They were policy enforcement, change control, blast-radius containment, and audit.',
+    'I spent nearly two decades building enterprise network infrastructure where, one bad decision propagates fast and recovery is measured in customer impact. The hard problems weren\'t the routing protocols. They were policy enforcement, change control, blast radius containment, and audit.',
     'Trading platforms have the same problems. Most ignore them.',
-    'HMP applies the engineering discipline of telecom-grade control planes to retail capital allocation. The result is a system designed for trust before it was designed for speed.',
+    'HMP applies the engineering discipline of enterprise grade control planes to retail capital allocation. The result is a system designed for trust before it was designed for speed.',
   ],
   bioAccentIndex: 1,
 }

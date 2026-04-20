@@ -32,6 +32,7 @@ export default function FounderSection() {
           background: colors.primaryDarker, borderRadius: 16, padding: '40px 32px',
           textAlign: 'center', color: colors.bgWhite,
           position: 'relative', overflow: 'hidden',
+          display: 'flex', flexDirection: 'column', justifyContent: 'center',
         }}>
           {/* Gold accent bar top-right */}
           <div style={{ position: 'absolute', top: 0, right: 0, width: 80, height: 4, background: colors.gold }} />
@@ -57,16 +58,9 @@ export default function FounderSection() {
           </div>
 
           <div style={{ fontSize: 20, fontWeight: 700, marginBottom: 4 }}>{founder.name}</div>
-          <div style={{ fontSize: 11, letterSpacing: 1.5, color: colors.goldLight, fontWeight: 700, marginBottom: 24 }}>
+          <div style={{ fontSize: 11, letterSpacing: 1.5, color: colors.goldLight, fontWeight: 700 }}>
             {founder.title}
           </div>
-
-          {founder.credentials.map(c => (
-            <div key={c.label} style={{ fontSize: 11, letterSpacing: 1, color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, marginBottom: 12 }}>
-              <div style={{ fontWeight: 700, color: colors.bgWhite }}>{c.label}</div>
-              <div>{c.value}</div>
-            </div>
-          ))}
         </div>
 
         {/* Bio — right column */}

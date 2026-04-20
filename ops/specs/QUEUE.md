@@ -29,6 +29,7 @@
 
 | Spec ID | Title | Completed |
 |---|---|---|
+| MKT_003 | Simplify founder card — drop corporate credentials, center vertically | 2026-04-20 |
 | FIX_001 | Pivot waitlist endpoint to API Gateway HTTP API behind api.housemoneyportfolio.com (Lambda Function URL was account-level blocked) | 2026-04-20 |
 | MKT_001 Phase 5 | Deploy pipeline + Cloudflare cutover | 2026-04-18 |
 | MKT_001 Phase 1 | Next.js 14 scaffold, brand tokens, content structure | 2026-04-18 |
